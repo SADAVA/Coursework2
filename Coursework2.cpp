@@ -90,11 +90,20 @@ private:
         // Iterate D Headers
         while (d != NULL)
         {
-            if (d->cBegin < id && id < d->pNext->cBegin)
-            {   // We have the PERFECT spot for new header!
-                newD->pNext = d->pNext; // Change pNext to next D header
-                d->pNext = newD;        // Change current's next header to new header
-                return newD;            // Done.
+            if (d->cBegin < id)
+            {
+                if (d->pNext == NULL)
+                {   // We are at the end of all D headers
+                    // Add new header as last
+                    d->pNext = newD;
+                    return newD;
+                }
+                if (id < d->pNext->cBegin)
+                {   // We have the PERFECT spot for new header!
+                    newD->pNext = d->pNext; // Change pNext to next D header
+                    d->pNext = newD;        // Change current's next header to new header
+                    return newD;            // Done.
+                }
             }
 
             // Next D header please!
@@ -146,7 +155,7 @@ private:
         newA->cBegin = id;
 
         // If no first header or first header is already higher than new ID
-        if (d->pHeaderA == NULL || id < d->pHeaderA->pNext->cBegin)
+        if (d->pHeaderA == NULL || id < d->pHeaderA->cBegin)
         {
             newA->pNext = d->pHeaderA;
             d->pHeaderA = newA;
@@ -156,11 +165,20 @@ private:
         // Iterate A Headers
         while (a != NULL)
         {
-            if (a->cBegin < id && id < a->pNext->cBegin)
-            {   // We have the PERFECT spot for new header!
-                newA->pNext = a->pNext; // Change pNext to next A header
-                a->pNext = newA;        // Change current's next header to new header
-                return newA;            // Done.
+            if (a->cBegin < id)
+            {
+                if (a->pNext == NULL)
+                {   // We are at the end of all A headers
+                    // Add new header as last
+                    a->pNext = newA;
+                    return newA;
+                }
+                if (id < a->pNext->cBegin)
+                {   // We have the PERFECT spot for new header!
+                    newA->pNext = a->pNext; // Change pNext to next A header
+                    a->pNext = newA;        // Change current's next header to new header
+                    return newA;            // Done.
+                }
             }
 
             // Next A header please!
@@ -210,6 +228,31 @@ public:
     int GetItemsNumber()
     {   // Returns the current number of items indata structure.
 
+        int counter = 0;
+
+        HEADER_D* d = firstHeaderD;
+
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                while (i != NULL)
+                {
+                    counter++;
+                    i = i->pNext;
+                }
+
+                a = a->pNext;
+            }
+
+            d = d->pNext;
+        }
+
+        return counter;
     }
 
     ITEM2* GetItem(char* pID)
@@ -259,16 +302,15 @@ public:
 
         while (d != NULL)
         {
-            ostr << d->cBegin << "  " << std::endl;
             HEADER_A* a = d->pHeaderA;
 
             while (a != NULL)
             {
-                ostr << "  " << a->cBegin << std::endl;
                 ITEM2* i = (ITEM2*)a->pItems;
 
                 while (i != NULL)
                 {
+                    ostr << d->cBegin << "  " << a->cBegin << " ";
                     ostr << std::setfill(' ') << std::setw(16) << i->pID;
                     ostr << " ";
                     ostr << std::setfill(' ') << std::setw(10) << i->Code;
@@ -293,7 +335,7 @@ int main()
     std::cout << "######### Creating new DataStructure #########" << std::endl;
     DataStructure data;
 
-    int numberOfItems = 2;
+    int numberOfItems = 10;
     std::cout << "######### Adding " << numberOfItems << " new items #########" << std::endl;
 
     for (int i = 0; i < numberOfItems; i++)
@@ -302,9 +344,9 @@ int main()
     std::cout << "######### Print current DataStructure #########" << std::endl;
     std::cout << data << std::endl << std::endl;
 
-    /*std::cout << "######### Size of DataStructure: " << data.GetItemsNumber() << std::endl;
+    std::cout << "######### Size of DataStructure: " << data.GetItemsNumber() << std::endl;
 
-    const char* getItemID = "Light Cyan";
+    /*const char* getItemID = "Light Cyan";
     std::cout << "######### Get item: " << getItemID << " #########" << std::endl;
     ITEM2* getItem = data.GetItem((char*)getItemID);
 
