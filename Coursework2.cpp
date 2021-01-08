@@ -23,6 +23,16 @@ void PrintTimeStructure(std::ostream& ostr, TIME* p)
     ostr << std::setfill('0') << std::setw(2) << p->Sec;
 }
 
+void PrintItem(std::ostream& ostr, ITEM2* i)
+{
+    ostr << std::setfill(' ') << std::setw(16) << i->pID;
+    ostr << " ";
+    ostr << std::setfill(' ') << std::setw(10) << i->Code;
+    ostr << " ";
+    PrintTimeStructure(ostr, i->pTime);
+    ostr << std::endl;
+}
+
 class DataStructure
 {
 private:
@@ -311,12 +321,7 @@ public:
                 while (i != NULL)
                 {
                     ostr << d->cBegin << "  " << a->cBegin << " ";
-                    ostr << std::setfill(' ') << std::setw(16) << i->pID;
-                    ostr << " ";
-                    ostr << std::setfill(' ') << std::setw(10) << i->Code;
-                    ostr << " ";
-                    PrintTimeStructure(ostr, i->pTime);
-                    ostr << std::endl;
+                    PrintItem(ostr, i);
                     i = i->pNext;
                 }
 
