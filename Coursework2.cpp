@@ -224,7 +224,69 @@ private:
         a->pItems = i;
     }
 
+    bool ItemWithIDExists(char* pItemID)
+    {
+        // First D header
+        HEADER_D* d = firstHeaderD;
 
+        // Iterate D headers
+        while (d != NULL)
+        {
+            // First A header
+            HEADER_A* a = d->pHeaderA;
+
+            // Itertate A headers
+            while (a != NULL)
+            {
+                // First item
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                // Iterate items
+                while (i != NULL)
+                {
+                    // Match item's ID to ID we are looking for
+                    if (StringsAreTheSame(i->pID, pItemID) == true)
+                        return true; // FOUND IT
+
+                    // Switch to next item
+                    i = i->pNext;
+                }
+
+                // Switch to next header A
+                a = a->pNext;
+            }
+
+            // Switch to next header D
+            d = d->pNext;
+        }
+
+        // No matches, means none of the items has this given ID
+        return false;
+    }
+
+    TIME* ReplicateTime(TIME* t)
+    {
+        TIME* newTime = new TIME;
+
+        newTime->Hour = t->Hour;
+        newTime->Min  = t->Min;
+        newTime->Sec  = t->Sec;
+
+        return newTime;
+    }
+
+    ITEM2* ReplicateItem(ITEM2* original)
+    {
+        ITEM2* newItem = new ITEM2;
+        newItem->Code = original->Code;
+        newItem->pTime = ReplicateTime(original->pTime);
+        
+        char* copy = (char*)malloc(strlen(original->pID) + 1);
+        strcpy_s(copy, strlen(original->pID) + 1, original->pID);
+        newItem->pID = copy;
+
+        return newItem;
+    }
 public:
     DataStructure()
     {   // Constructor that creates empty data structure.
@@ -240,9 +302,31 @@ public:
 
     }
 
+
     DataStructure(const DataStructure& Original)
     {   // Copy constructor.
+        // Simply iterate over all items in `Original` and add them to `this`, structure will be recreated.
+        HEADER_D* d = Original.firstHeaderD;
 
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                while (i != NULL)
+                {
+                    (*this) += ReplicateItem(i);
+                    i = i->pNext;
+                }
+
+                a = a->pNext;
+            }
+
+            d = d->pNext;
+        }
     }
 
     int GetItemsNumber()
@@ -318,9 +402,113 @@ public:
         AppendItem(a, i);
     }
 
-    void operator-=(char* pID)
+    void operator-=(char* pRemoveItemID)
     {   // Operator function to removeand destroy item with the specified ID.
+        if (pRemoveItemID == NULL)
+        {
+            std::cout << "In order to remove an item ID must be specified" << std::endl;
+            return;
+        }
+        if (ItemWithIDExists(pRemoveItemID) != true)
+        {
+            std::cout << "Item with such ID DOES NOT exist!" << std::endl;
+            return;
+        }
 
+        // First D header
+        HEADER_D* d = firstHeaderD;
+        HEADER_D* dPrevious = NULL;
+
+        // Iterate D headers
+        while (d != NULL)
+        {
+            // First A header
+            HEADER_A* a = d->pHeaderA;
+            HEADER_A* aPrevious = NULL;
+
+            // Itertate A headers
+            while (a != NULL)
+            {
+                // First item
+                ITEM2* i = (ITEM2*)a->pItems;
+                ITEM2* iPrevious = NULL;
+
+                // Iterate items
+                while (i != NULL)
+                {
+                    // Match item's ID to ID we are looking for
+                    if (StringsAreTheSame(i->pID, pRemoveItemID) == true)
+                    {
+                        // REMOVING ITEM
+                        ITEM2* iNext = i->pNext;
+                        delete i;
+
+                        if (iPrevious == NULL) // This is the first item in header A
+                        {
+                            if (iNext != NULL)
+                            {
+                                a->pItems = iNext;
+                            }
+                            else // No next and no previous
+                            {
+                                // REMOVING A HEADER
+                                HEADER_A* aNext = a->pNext;
+                                delete a;
+
+                                if (aPrevious == NULL) // This is the first A header
+                                {
+                                    if (aNext == NULL) // No next and no previous
+                                    {
+                                        // REMOVING D HEADER
+                                        HEADER_D* dNext = d->pNext;
+                                        delete d;
+
+                                        if (dPrevious == NULL) // This is the first d header
+                                        {
+                                            firstHeaderD = dNext;
+                                        }
+                                        else
+                                        {
+                                            dPrevious->pNext = dNext;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        d->pHeaderA = aNext;
+                                    }
+                                }
+                                else
+                                {
+                                    aPrevious->pNext = aNext;
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            iPrevious->pNext = iNext;
+                        }
+
+                        // Item deleted, return
+                        return;
+                    }
+
+                    // Switch to next item
+                    iPrevious = i;
+                    i = i->pNext;
+                }
+
+                // Switch to next header A
+                aPrevious = a;
+                a = a->pNext;
+            }
+
+            // Switch to next header D
+            dPrevious = d;
+            d = d->pNext;
+        }
+
+        std::cout << "Failed to remove item, ID not found" << std::endl;
     }
 
     DataStructure& operator=(const DataStructure& Right)
@@ -329,8 +517,34 @@ public:
     }
 
     int operator==(DataStructure& Other)
-    {   // Operator function for comparison. Returs 0 (not equal) or 1 (equal).
+    {   // Operator function for comparison. Returs 0 (not equal) or 1 (equal)./
+        // Just iterate over all items in `Other`, and check if the item exists in `this` DataStructure
+        HEADER_D* d = Other.firstHeaderD;
 
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                while (i != NULL)
+                {
+                    if (ItemWithIDExists(i->pID) != true)
+                        return false; // This item does not exist, structs are different
+                    i = i->pNext;
+                }
+
+                a = a->pNext;
+            }
+
+            d = d->pNext;
+        }
+
+        // All items checked and all of them exist
+        // structs are the same
+        return true;
     }
 
     void Write(char* pFilename)
@@ -352,7 +566,7 @@ public:
 
                 while (i != NULL)
                 {
-                    ostr << d->cBegin << "  " << a->cBegin << " ";
+                    ostr << d->cBegin << "" << a->cBegin << " ";
                     PrintItem(ostr, i);
                     i = i->pNext;
                 }
@@ -393,8 +607,8 @@ int main()
     ITEM2* getItem2 = data.GetItem((char*)getItemID2);
     PrintItem(std::cout, getItem2);
 
-    /*std::cout << "######### Creating copy of DataStructure #########" << std::endl;
-    DataStructure dataCopy = data;
+    std::cout << "######### Creating copy of DataStructure #########" << std::endl;
+    DataStructure dataCopy = DataStructure(data);
 
     std::cout << "######### Removing from initial data #########" << std::endl;
     const char* itemsToRemove[] = { "Banana Mania", "Persian Green", "Vegas Gold" };
@@ -407,7 +621,7 @@ int main()
     else
         std::cout << "DATAs ARE DIFFERENT" << std::endl;
 
-    const char* filename = "datastructure.bin";
+    /*const char* filename = "datastructure.bin";
     std::cout << "######### Writing initial data structure TO file: " << filename << " #########" << std::endl;
     data.Write((char*)filename);
 
