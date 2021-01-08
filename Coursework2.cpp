@@ -25,12 +25,22 @@ void PrintTimeStructure(std::ostream& ostr, TIME* p)
 
 void PrintItem(std::ostream& ostr, ITEM2* i)
 {
+    if (i == NULL)
+    {
+        ostr << "[ERROR] Item is NULL" << std::endl;
+        return;
+    }
     ostr << std::setfill(' ') << std::setw(16) << i->pID;
     ostr << " ";
     ostr << std::setfill(' ') << std::setw(10) << i->Code;
     ostr << " ";
     PrintTimeStructure(ostr, i->pTime);
     ostr << std::endl;
+}
+
+bool StringsAreTheSame(char* a, char* b)
+{
+    return strcmp(a, b) == 0;
 }
 
 class DataStructure
@@ -266,8 +276,30 @@ public:
     }
 
     ITEM2* GetItem(char* pID)
-    {   // Returns pointer to item with the specified ID.If the item was not found, returns 0.
+    {   // Returns pointer to item with the specified ID. If the item was not found, returns 0.
+        HEADER_D* d = firstHeaderD;
 
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                while (i != NULL)
+                {
+                    if (StringsAreTheSame(i->pID, pID) == true) return i;
+                    i = i->pNext;
+                }
+
+                a = a->pNext;
+            }
+
+            d = d->pNext;
+        }
+
+        return NULL;
     }
 
     void operator+=(ITEM2* i)
@@ -351,15 +383,17 @@ int main()
 
     std::cout << "######### Size of DataStructure: " << data.GetItemsNumber() << std::endl;
 
-    /*const char* getItemID = "Light Cyan";
+    const char* getItemID = "Light Cyan";
     std::cout << "######### Get item: " << getItemID << " #########" << std::endl;
     ITEM2* getItem = data.GetItem((char*)getItemID);
+    PrintItem(std::cout, getItem);
 
     const char* getItemID2 = "X X";
     std::cout << "######### Get NON-EXISTING item: " << getItemID2 << " #########" << std::endl;
     ITEM2* getItem2 = data.GetItem((char*)getItemID2);
+    PrintItem(std::cout, getItem2);
 
-    std::cout << "######### Creating copy of DataStructure #########" << std::endl;
+    /*std::cout << "######### Creating copy of DataStructure #########" << std::endl;
     DataStructure dataCopy = data;
 
     std::cout << "######### Removing from initial data #########" << std::endl;
@@ -392,7 +426,7 @@ int main()
     std::cout << "######### Print the result #########" << std::endl;
     std::cout << dataFromFile << std::endl << std::endl; //*/
 
-    std::cout << "FINISH" << std::endl;
+    std::cout << "######### FINISH #########" << std::endl;
 }
 
 // EOF
