@@ -2,48 +2,36 @@
 // S.
 
 #include <iostream>
-
-class DataStructure
-{
-    DataStructure();
-    DataStructure(char* pFilename);
-    ~DataStructure();
-    DataStructure(const DataStructure& Original);
-    int GetItemsNumber();
-    ITEM2* GetItem(char* pID);
-    void operator+=(ITEM2* i);
-    void operator-=(char* pID);
-    DataStructure& operator=(const DataStructure& Right);
-    int operator==(DataStructure& Other);
-    void Write(char* pFilename);
-    friend std::ostream& operator<<(std::ostream& ostr, const DataStructure& str);
-};
+#include "DateTime.h"
+#include "Items.h"
+#include "Headers.h"
+#include "ICS0017DataSource.h"
 
 class DataStructure
 {
     DataStructure()
     {   // Constructor that creates empty data structure.
-        
+
     }
 
     DataStructure(char* pFilename)
     {   // Constructor that reads data from a binary file.
-        
+
     }
 
     ~DataStructure()
     {   // Destructor that deletes all the items, vectors of pointersand headers.
-        
+
     }
 
     DataStructure(const DataStructure& Original)
     {   // Copy constructor.
-        
+
     }
 
     int GetItemsNumber()
     {   // Returns the current number of items indata structure.
-        
+
     }
 
     ITEM2* GetItem(char* pID)
@@ -53,7 +41,7 @@ class DataStructure
 
     void operator+=(ITEM2* i)
     {   // Operator function to add a new item into data structure.
-        
+
     }
 
     void operator-=(char* pID)
@@ -68,7 +56,7 @@ class DataStructure
 
     int operator==(DataStructure& Other)
     {   // Operator function for comparison. Returs 0 (not equal) or 1 (equal).
-        
+
     }
 
     void Write(char* pFilename)
@@ -85,6 +73,7 @@ class DataStructure
 int main()
 {
     std::cout << "Hello World!\n";
+    HEADER_D* p = GetStruct4(2, 20);
 }
 
 // EOF
