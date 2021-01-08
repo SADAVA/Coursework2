@@ -9,6 +9,7 @@
 
 class DataStructure
 {
+public:
     DataStructure()
     {   // Constructor that creates empty data structure.
 
@@ -72,8 +73,60 @@ class DataStructure
 
 int main()
 {
-    std::cout << "Hello World!\n";
-    HEADER_D* p = GetStruct4(2, 20);
+    std::cout << "######### Creating new DataStructure #########" << std::endl;
+    DataStructure data;
+
+    int numberOfItems = 10;
+    std::cout << "######### Adding " << numberOfItems << " new items #########" << std::endl;
+
+    for (int i = 0; i < numberOfItems; i++)
+        data += (ITEM2*)GetItem(2);
+
+    std::cout << "######### Print current DataStructure #########" << std::endl;
+    std::cout << data << std::endl << std::endl;
+
+    std::cout << "######### Size of DataStructure: " << data.GetItemsNumber() << std::endl;
+
+    const char* getItemID = "Light Cyan";
+    std::cout << "######### Get item: " << getItemID << " #########" << std::endl;
+    ITEM2* getItem = data.GetItem((char*)getItemID);
+
+    const char* getItemID2 = "X X";
+    std::cout << "######### Get NON-EXISTING item: " << getItemID2 << " #########" << std::endl;
+    ITEM2* getItem2 = data.GetItem((char*)getItemID2);
+
+    std::cout << "######### Creating copy of DataStructure #########" << std::endl;
+    DataStructure dataCopy = data;
+
+    std::cout << "######### Removing from initial data #########" << std::endl;
+    const char* itemsToRemove[] = { "Banana Mania", "Persian Green", "Vegas Gold" };
+    for (const char* itemToRemove : itemsToRemove)
+        data -= (char*)itemToRemove;
+
+    std::cout << "######### Compare inital data to copy #########" << std::endl;
+    if (data == dataCopy)
+        std::cout << "DATAs ARE THE SAME" << std::endl;
+    else
+        std::cout << "DATAs ARE DIFFERENT" << std::endl;
+
+    const char* filename = "datastructure.bin";
+    std::cout << "######### Writing initial data structure TO file: " << filename << " #########" << std::endl;
+    data.Write((char*)filename);
+
+    std::cout << "######### Creating new data structure FROM file: " << filename << " #########" << std::endl;
+    DataStructure dataFromFile = DataStructure((char*)filename);
+
+    std::cout << "######### Compare inital data to data from file #########" << std::endl;
+    if (data == dataFromFile)
+        std::cout << "DATAs ARE THE SAME" << std::endl;
+    else
+        std::cout << "DATAs ARE DIFFERENT" << std::endl;
+
+    std::cout << "######### Assign copy to fromFile data structure #########" << std::endl;
+    dataFromFile = dataCopy;
+
+    std::cout << "######### Print the result #########" << std::endl;
+    std::cout << dataFromFile << std::endl << std::endl;
 }
 
 // EOF
