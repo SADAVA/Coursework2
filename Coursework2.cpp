@@ -2,6 +2,8 @@
 // S.
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <iomanip>
 #include "DateTime.h"
 #include "Items.h"
@@ -287,6 +289,7 @@ private:
 
         return newItem;
     }
+
 public:
     DataStructure()
     {   // Constructor that creates empty data structure.
@@ -294,7 +297,14 @@ public:
 
     DataStructure(char* pFilename)
     {   // Constructor that reads data from a binary file.
+        std::ifstream file(pFilename);
 
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            std::cout << line << std::endl;
+        }
     }
 
     ~DataStructure()
@@ -549,7 +559,31 @@ public:
 
     void Write(char* pFilename)
     {   // Serializes the data structureand writes into the specified file.
+        std::ofstream file(pFilename, std::ios::trunc);
 
+        HEADER_D* d = firstHeaderD;
+
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                while (i != NULL)
+                {
+                    file << i->pID << " " << i->Code << " " << i->pTime << std::endl;
+                    i = i->pNext;
+                }
+
+                a = a->pNext;
+            }
+
+            d = d->pNext;
+        }
+
+        file.close();
     }
 
     friend std::ostream& operator<<(std::ostream& ostr, const DataStructure& str)
@@ -621,7 +655,7 @@ int main()
     else
         std::cout << "DATAs ARE DIFFERENT" << std::endl;
 
-    /*const char* filename = "datastructure.bin";
+    const char* filename = "datastructure.txt";
     std::cout << "######### Writing initial data structure TO file: " << filename << " #########" << std::endl;
     data.Write((char*)filename);
 
@@ -634,7 +668,7 @@ int main()
     else
         std::cout << "DATAs ARE DIFFERENT" << std::endl;
 
-    std::cout << "######### Assign copy to fromFile data structure #########" << std::endl;
+    /*std::cout << "######### Assign copy to fromFile data structure #########" << std::endl;
     dataFromFile = dataCopy;
 
     std::cout << "######### Print the result #########" << std::endl;
