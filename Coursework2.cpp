@@ -352,6 +352,40 @@ private:
         return item;
     }
 
+    void DeleteEverything()
+    {   // Deletes every item, every A header and every D header
+        HEADER_D* d = firstHeaderD;
+        HEADER_D* dNext = NULL;
+
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+            HEADER_A* aNext = NULL;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+                ITEM2* iNext = NULL;
+
+                while (i != NULL)
+                {
+                    iNext = i->pNext;
+                    delete i;
+                    i = iNext;
+                }
+
+                aNext = a->pNext;
+                delete a;
+                a = aNext;
+            }
+
+            dNext = d->pNext;
+            delete d;
+            d = dNext;
+        }
+
+        firstHeaderD = NULL;
+    }
 public:
     DataStructure()
     {   // Constructor that creates empty data structure.
@@ -586,7 +620,33 @@ public:
 
     DataStructure& operator=(const DataStructure& Right)
     {   // Operator function for assignment.
+        DeleteEverything();
 
+        // Iterate all items in `Right`
+        // Replicate item and add it to `this`
+        HEADER_D* d = Right.firstHeaderD;
+
+        while (d != NULL)
+        {
+            HEADER_A* a = d->pHeaderA;
+
+            while (a != NULL)
+            {
+                ITEM2* i = (ITEM2*)a->pItems;
+
+                while (i != NULL)
+                {
+                    (*this) += ReplicateItem(i);
+                    i = i->pNext;
+                }
+
+                a = a->pNext;
+            }
+
+            d = d->pNext;
+        }
+
+        return *this;
     }
 
     int operator==(DataStructure& Other)
@@ -735,11 +795,18 @@ int main()
     else
         std::cout << "DATAs ARE DIFFERENT" << std::endl;
 
-    /*std::cout << "######### Assign copy to fromFile data structure #########" << std::endl;
+    std::cout << "######### Assign copy to fromFile data structure #########" << std::endl;
     dataFromFile = dataCopy;
 
     std::cout << "######### Print the result #########" << std::endl;
-    std::cout << dataFromFile << std::endl << std::endl; //*/
+    std::cout << "######### data #########" << std::endl;
+    std::cout << data << std::endl << std::endl;
+
+    std::cout << "######### dataFromFile #########" << std::endl;
+    std::cout << dataFromFile << std::endl << std::endl;
+
+    std::cout << "######### dataCopy #########" << std::endl;
+    std::cout << dataCopy << std::endl << std::endl;
 
     std::cout << "######### FINISH #########" << std::endl;
 }
