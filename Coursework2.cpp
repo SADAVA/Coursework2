@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <iomanip>
 #include "DateTime.h"
@@ -290,6 +291,67 @@ private:
         return newItem;
     }
 
+    std::string SerializeTime(TIME* t)
+    {
+        std::ostringstream res;
+
+        res << t->Hour << ":" << t->Min << ":" << t->Sec;
+
+        return res.str();
+    }
+
+    std::string SerializeItem2(ITEM2* i)
+    {
+        std::ostringstream res;
+
+        res << i->pID << "*" << i->Code << "*" << SerializeTime(i->pTime);
+
+        return res.str();
+    }
+
+    TIME* DeserializeTime(std::string line)
+    {
+        TIME* time = new TIME;
+
+
+        std::string stringyHour = line.substr(0, line.find("*", 0)); // Slice Hour
+        line = line.substr(line.find(":", 0) + 1, line.length()); // Slice off the Hour
+
+        std::string stringyMin = line.substr(0, line.find("*", 0)); // Slice Min
+        line = line.substr(line.find(":", 0) + 1, line.length()); // Slice off the Min
+
+        std::string stringySec = line; // What's left is Sec
+
+        time->Hour = std::stoi(stringyHour);
+        time->Min  = std::stoi(stringyMin);
+        time->Sec  = std::stoi(stringySec);
+
+        return time;
+    }
+
+    ITEM2* DeserializeItem2(std::string line)
+    {
+        ITEM2* item = new ITEM2;
+
+
+        std::string stringyID = line.substr(0, line.find("*", 0)); // Slice ID
+        char* charID = (char*)stringyID.c_str();
+        line = line.substr(line.find("*", 0) + 1, line.length()); // Slice off the ID
+
+        std::string stringyCode = line.substr(0, line.find("*", 0)); // Slice Code
+        line = line.substr(line.find("*", 0) + 1, line.length()); // Slice off the Code
+
+        // What's left is Time
+        item->pNext = NULL;
+        char* copy = (char*)malloc(strlen(charID) + 1);
+        strcpy_s(copy, strlen(charID) + 1, charID);
+        item->pID = copy;
+        item->Code = std::stoul(stringyCode);
+        item->pTime = DeserializeTime(line);
+
+        return item;
+    }
+
 public:
     DataStructure()
     {   // Constructor that creates empty data structure.
@@ -303,7 +365,8 @@ public:
 
         while (std::getline(file, line))
         {
-            std::cout << line << std::endl;
+            ITEM2* i = DeserializeItem2(line);
+            (*this) += i;
         }
     }
 
@@ -529,6 +592,10 @@ public:
     int operator==(DataStructure& Other)
     {   // Operator function for comparison. Returs 0 (not equal) or 1 (equal)./
         // Just iterate over all items in `Other`, and check if the item exists in `this` DataStructure
+
+        if (GetItemsNumber() != Other.GetItemsNumber())
+            return false; // Number of items is different
+
         HEADER_D* d = Other.firstHeaderD;
 
         while (d != NULL)
@@ -573,7 +640,7 @@ public:
 
                 while (i != NULL)
                 {
-                    file << i->pID << " " << i->Code << " " << i->pTime << std::endl;
+                    file << SerializeItem2(i) << std::endl;
                     i = i->pNext;
                 }
 
